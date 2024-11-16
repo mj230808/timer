@@ -1,3 +1,4 @@
+/*
 let timerInterval;
 let elapsedTime = 0;
 let selectedActivity = "Email";
@@ -54,3 +55,4 @@ document.getElementById('activitySelect').addEventListener('change', (e) => {
 });
 
 updateCumulativeTable();
+*/

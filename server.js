@@ -1,4 +1,4 @@
-const express = require('express');
+/*const express = require('express');
 const { Pool } = require('pg');
 const bodyParser = require('body-parser');
 
@@ -56,3 +56,4 @@ app.post('/update', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+*/
