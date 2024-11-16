@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activity Timer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="top-section">
+      <h1 class="title">Activity Timer</h1>
+      <div class="time-display">00:00:00</div>
+      <select id="activitySelect" class="activity-select">
+        <option value="Email">Email</option>
+        <option value="Meeting">Meeting</option>
+        <option value="Discussion">Discussion</option>
+        <option value="Food">Food</option>
+        <option value="Travel">Travel</option>
+      </select>
+      <div class="button-container">
+        <button id="startButton" class="button">Start</button>
+        <button id="stopButton" class="button">Stop</button>
+        <button id="resetButton" class="button">Reset</button>
+      </div>
+    </div>
+    <div class="bottom-section">
+      <h2 class="subtitle">Cumulative Time</h2>
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Activity</th>
+            <th>Cumulative Time</th>
+          </tr>
+        </thead>
+        <tbody id="activityTableBody">
+          <!-- Rows will be populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

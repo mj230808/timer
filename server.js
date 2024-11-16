@@ -1,100 +1,58 @@
-// Needed for dotenv
-require("dotenv").config();
+const express = require('express');
+const { Pool } = require('pg');
+const bodyParser = require('body-parser');
 
-// Needed for Express
-var express = require('express')
-var app = express()
+const app = express();
+const PORT = 3000;
 
-// Needed for EJS
-app.set('view engine', 'ejs');
-
-// Needed for public directory
-app.use(express.static(__dirname + '/public'));
-
-// Needed for parsing form data
-app.use(express.json());       
-app.use(express.urlencoded({extended: true}));
-
-// Needed for Prisma to connect to database
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient();
-
-// Main landing page
-app.get('/', async function(req, res) {
-
-    // Try-Catch for any errors
-    try {
-        // Get all blog posts
-        const blogs = await prisma.post.findMany({
-                orderBy: [
-                  {
-                    id: 'desc'
-                  }
-                ]
-        });
-
-        // Render the homepage with all the blog posts
-        await res.render('pages/home', { blogs: blogs });
-      } catch (error) {
-        res.render('pages/home');
-        console.log(error);
-      } 
+// Database connection
+const pool = new Pool({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'activity_timer',
+  password: 'yourpassword',
+  port: 5432,
 });
 
-// About page
-app.get('/about', function(req, res) {
-    res.render('pages/about');
+app.use(bodyParser.json());
+app.use(express.static('public'));
+
+// Initialize database
+async function initDatabase() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS Activities (
+      activity TEXT PRIMARY KEY,
+      time INTEGER DEFAULT 0
+    );
+  `);
+
+  const activities = ["Email", "Meeting", "Discussion", "Food", "Travel"];
+  for (const activity of activities) {
+    await pool.query(
+      `INSERT INTO Activities (activity, time)
+      VALUES ($1, 0) ON CONFLICT (activity) DO NOTHING;`,
+      [activity]
+    );
+  }
+}
+initDatabase();
+
+// Get all cumulative times
+app.get('/activities', async (req, res) => {
+  const result = await pool.query('SELECT * FROM Activities');
+  res.json(result.rows);
 });
 
-// New post page
-app.get('/new', function(req, res) {
-    res.render('pages/new');
+// Update cumulative time for an activity
+app.post('/update', async (req, res) => {
+  const { activity, time } = req.body;
+  await pool.query(
+    'UPDATE Activities SET time = time + $1 WHERE activity = $2',
+    [time, activity]
+  );
+  res.json({ success: true });
 });
 
-// Create a new post
-app.post('/new', async function(req, res) {
-    
-    // Try-Catch for any errors
-    try {
-        // Get the title and content from submitted form
-        const { title, content } = req.body;
-
-        // Reload page if empty title or content
-        if (!title || !content) {
-            console.log("Unable to create new post, no title or content");
-            res.render('pages/new');
-        } else {
-            // Create post and store in database
-            const blog = await prisma.post.create({
-                data: { title, content },
-            });
-
-            // Redirect back to the homepage
-            res.redirect('/');
-        }
-      } catch (error) {
-        console.log(error);
-        res.render('pages/new');
-      }
-
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
-
-// Delete a post by id
-app.post("/delete/:id", async (req, res) => {
-    const { id } = req.params;
-    
-    try {
-        await prisma.post.delete({
-            where: { id: parseInt(id) },
-        });
-      
-        // Redirect back to the homepage
-        res.redirect('/');
-    } catch (error) {
-        console.log(error);
-        res.redirect('/');
-    }
-  });
-
-// Tells the app which port to run on
-app.listen(8080);
